@@ -100,13 +100,13 @@
 
             const result = await Tesseract.recognize(
                 canvas.toDataURL(),
-                'eng+uz',
+                'uz+eng',
                 {
                     logger: (m) => console.log(m)
                 }
             );
 
-            // Tozalash: OCR'dan olingan matnni tozalash
+            // OCR'dan olingan matnni tozalash
             let text = result.data.text;
             text = text.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ').trim();  // Yiqilgan joylarni bitta bo'sh joyga almashtirish
 
@@ -114,7 +114,7 @@
 
             // Regex bilan familiya, ism va tug‘ilgan sanani ajratib olish
             const namePattern = /([A-Za-zА-Яа-я]+)\s([A-Za-zА-Яа-я]+)/;  // Familiya va ism
-            const dobPattern = /\d{2}.\d{2}.\d{4}/;  // Tug‘ilgan sana
+            const dobPattern = /\d{2}\.\d{2}\.\d{4}/;  // Tug‘ilgan sana
 
             const nameMatch = text.match(namePattern);
             const dobMatch = text.match(dobPattern);
