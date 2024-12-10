@@ -36,8 +36,10 @@
             font-size: 18px;
         }
 
-        .content {
-            margin: 30px 0;
+        .loading {
+            font-size: 20px;
+            color: green;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -52,32 +54,27 @@
 
     <div id="output"></div>
 
+    <div id="loading" class="loading" style="display: none;">Iltimos, rasmni o'qish uchun kuting...</div>
+
     <!-- Tesseract.js kutubxonasini yuklash -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.0/dist/tesseract.min.js"></script>
-    <!-- Word faylini yaratish uchun kerakli kutubxonalar -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.0.6/pizzip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.17.0/docxtemplater.js"></script>
-    
+
     <script>
-        // Kamera olingan rasmni chiqarish
         const video = document.getElementById('video');
         const captureBtn = document.getElementById('captureBtn');
         const outputDiv = document.getElementById('output');
+        const loadingDiv = document.getElementById('loading');
         let stream;
 
-        // Kamera boshlash
         async function startCamera() {
-            // Qurilmadagi barcha video qurilmalari haqida ma'lumot olish
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
-            // Mobil qurilmada faqat orqa kamerani tanlash
-            let backCamera = videoDevices.find(device => device.label.toLowerCase().includes('back') || device.deviceId);
+            let backCamera = videoDevices.find(device => device.label.toLowerCase().includes('back'));
             if (!backCamera && videoDevices.length > 0) {
-                backCamera = videoDevices[0];  // Agar orqa kamera topilmasa, birinchi kamerani ishlatish
+                backCamera = videoDevices[0];
             }
 
-            // Agar orqa kamera topilsa, uni faollashtiramiz
             if (backCamera) {
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
@@ -90,74 +87,51 @@
             }
         }
 
-        // Rasmni olish
         captureBtn.addEventListener('click', async () => {
             captureBtn.disabled = true;
+            loadingDiv.style.display = 'block';
+            outputDiv.innerHTML = '';
 
-            // Canvas yaratish
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // Tesseract.js bilan OCR
             const result = await Tesseract.recognize(
                 canvas.toDataURL(),
-                'eng+uz',  // ingliz va o'zbek tilida o'qish
+                'eng+uz',
                 {
-                    logger: (m) => console.log(m) // Log xabarlarini chiqarish
+                    logger: (m) => console.log(m)
                 }
             );
 
-            const text = result.data.text;
-            console.log(text);  // Konsolga chiqarish
+            // Tozalash: OCR'dan olingan matnni tozalash
+            let text = result.data.text;
+            text = text.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ').trim();  // Yiqilgan joylarni bitta bo'sh joyga almashtirish
 
-            // Ism, familiya va tug'ilgan yilni ajratish
-            const namePattern = /([A-Za-z]+)\s([A-Za-z]+)/;
-            const dobPattern = /\d{2}.\d{2}.\d{4}/;
+            console.log(text);
+
+            // Regex bilan familiya, ism va tug‘ilgan sanani ajratib olish
+            const namePattern = /([A-Za-zА-Яа-я]+)\s([A-Za-zА-Яа-я]+)/;  // Familiya va ism
+            const dobPattern = /\d{2}.\d{2}.\d{4}/;  // Tug‘ilgan sana
 
             const nameMatch = text.match(namePattern);
             const dobMatch = text.match(dobPattern);
 
+            // Familiya va ismni to'g'ri ajratish
             const name = nameMatch ? nameMatch[0] : 'Ism topilmadi';
             const dob = dobMatch ? dobMatch[0] : 'Tug‘ilgan sana topilmadi';
 
+            loadingDiv.style.display = 'none';
             outputDiv.innerHTML = `
                 <h2>Natija:</h2>
                 <p>Ism: ${name}</p>
                 <p>Tug‘ilgan sana: ${dob}</p>
             `;
-
-            // Word faylini yaratish
-            createWordFile(name, dob);
+            captureBtn.disabled = false;
         });
 
-        // Word faylini yaratish
-        function createWordFile(name, dob) {
-            const doc = new Document({
-                sections: [
-                    {
-                        properties: {},
-                        children: [
-                            new Paragraph({
-                                children: [
-                                    new TextRun(`Ism: ${name}`),
-                                    new TextRun(`Tug‘ilgan sana: ${dob}`)
-                                ]
-                            })
-                        ]
-                    }
-                ]
-            });
-
-            // Word faylini yuklab olish
-            Packer.toBlob(doc).then((blob) => {
-                saveAs(blob, "Shaxsiy_Guvohnoma.docx");
-            });
-        }
-
-        // Kamera ishga tushirish
         startCamera();
     </script>
 </body>
