@@ -41,6 +41,10 @@
             color: green;
             font-weight: bold;
         }
+
+        .result {
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -113,21 +117,23 @@
             console.log(text);
 
             // Regex bilan familiya, ism va tug‘ilgan sanani ajratib olish
-            const namePattern = /([A-Za-zА-Яа-я]+)\s([A-Za-zА-Яа-я]+)/;  // Familiya va ism
-            const dobPattern = /\d{2}\.\d{2}\.\d{4}/;  // Tug‘ilgan sana
+            const namePattern = /([A-Za-zА-Яа-я]+)\s([A-Za-zА-Яа-я]+)/g;  // Familiya va ism
+            const dobPattern = /\d{2}\.\d{2}\.\d{4}/g;  // Tug‘ilgan sana
 
-            const nameMatch = text.match(namePattern);
-            const dobMatch = text.match(dobPattern);
+            const nameMatches = [...text.matchAll(namePattern)]; // Familiya va ismni topish
+            const dobMatches = [...text.matchAll(dobPattern)];   // Tug‘ilgan sanani topish
 
-            // Familiya va ismni to'g'ri ajratish
-            const name = nameMatch ? nameMatch[0] : 'Ism topilmadi';
-            const dob = dobMatch ? dobMatch[0] : 'Tug‘ilgan sana topilmadi';
+            // Natijalarni chiqarish
+            let firstName = nameMatches.length > 0 ? nameMatches[0][1] : 'Ism topilmadi';
+            let lastName = nameMatches.length > 0 ? nameMatches[0][2] : 'Familiya topilmadi';
+            let dob = dobMatches.length > 0 ? dobMatches[0][0] : 'Tug‘ilgan sana topilmadi';
 
             loadingDiv.style.display = 'none';
             outputDiv.innerHTML = `
                 <h2>Natija:</h2>
-                <p>Ism: ${name}</p>
-                <p>Tug‘ilgan sana: ${dob}</p>
+                <div class="result"><strong>Familiya:</strong> ${lastName}</div>
+                <div class="result"><strong>Ism:</strong> ${firstName}</div>
+                <div class="result"><strong>Tug‘ilgan sana:</strong> ${dob}</div>
             `;
             captureBtn.disabled = false;
         });
