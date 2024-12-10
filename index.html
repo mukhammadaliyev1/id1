@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaxsiy Guvohnoma OCR</title>
+    <title>Topshiriq</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,15 +41,11 @@
             color: green;
             font-weight: bold;
         }
-
-        .result {
-            margin: 10px 0;
-        }
     </style>
 </head>
 <body>
 
-    <h1>Shaxsiy Guvohnomani O'qish</h1>
+    <h1>ID CARD</h1>
 
     <div class="content">
         <video id="video" autoplay></video>
@@ -60,7 +56,7 @@
 
     <div id="loading" class="loading" style="display: none;">Iltimos, rasmni o'qish uchun kuting...</div>
 
-    <!-- Tesseract.js kutubxonasini yuklash -->
+
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.0/dist/tesseract.min.js"></script>
 
     <script>
@@ -110,30 +106,25 @@
                 }
             );
 
-            // OCR'dan olingan matnni tozalash
+            
             let text = result.data.text;
-            text = text.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ').trim();  // Yiqilgan joylarni bitta bo'sh joyga almashtirish
+            text = text.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ').trim(); 
 
             console.log(text);
 
-            // Regex bilan familiya, ism va tug‘ilgan sanani ajratib olish
-            const namePattern = /([A-Za-zА-Яа-я]+)\s([A-Za-zА-Яа-я]+)/g;  // Familiya va ism
-            const dobPattern = /\d{2}\.\d{2}\.\d{4}/g;  // Tug‘ilgan sana
+            const namePattern = /([A-Za-zА-Яа-я]+)\s([A-Za-zА-Яа-я]+)/;           const dobPattern = /\d{2}\.\d{2}\.\d{4}/; 
+            const nameMatch = text.match(namePattern);
+            const dobMatch = text.match(dobPattern);
 
-            const nameMatches = [...text.matchAll(namePattern)]; // Familiya va ismni topish
-            const dobMatches = [...text.matchAll(dobPattern)];   // Tug‘ilgan sanani topish
-
-            // Natijalarni chiqarish
-            let firstName = nameMatches.length > 0 ? nameMatches[0][1] : 'Ism topilmadi';
-            let lastName = nameMatches.length > 0 ? nameMatches[0][2] : 'Familiya topilmadi';
-            let dob = dobMatches.length > 0 ? dobMatches[0][0] : 'Tug‘ilgan sana topilmadi';
+    
+            const name = nameMatch ? nameMatch[0] : 'Ism topilmadi';
+            const dob = dobMatch ? dobMatch[0] : 'Tug‘ilgan sana topilmadi';
 
             loadingDiv.style.display = 'none';
             outputDiv.innerHTML = `
                 <h2>Natija:</h2>
-                <div class="result"><strong>Familiya:</strong> ${lastName}</div>
-                <div class="result"><strong>Ism:</strong> ${firstName}</div>
-                <div class="result"><strong>Tug‘ilgan sana:</strong> ${dob}</div>
+                <p>Ism: ${name}</p>
+                <p>Tug‘ilgan sana: ${dob}</p>
             `;
             captureBtn.disabled = false;
         });
@@ -141,4 +132,5 @@
         startCamera();
     </script>
 </body>
-</html>
+</html> 
+
